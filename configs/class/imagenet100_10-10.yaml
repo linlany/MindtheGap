@@ -1,0 +1,50 @@
+hydra:
+  run:
+    dir: ./experiments/${scenario}/${dataset}_${initial_increment}-${increment}_alpha30
+  job:
+    chdir: true
+
+  job_logging:
+    version: 1
+    formatters:
+      simple:
+        format: '%(message)s'
+
+class_order: ""
+dataset_root: ""
+workdir: ""
+log_path: "metrics.json"
+model_name: "ViT-B/16"
+prompt_template: "a good photo of a {}."
+
+batch_size: 128
+initial_increment: 10  
+increment: ${initial_increment}
+scenario: "class"
+dataset: "imagenet100"
+task_num: 10
+
+epochs: 2
+train_batch_size: 128
+num_workers: 8
+lora_rank: 8
+lora_mode: "vision+only_kv+text"
+lr: 0.0005
+reset: False
+only_reset_B: False
+freeze_A: False
+all_test: False
+weight_decay: 1e-4
+momentum: 0.9
+seed: 0
+
+distill: false
+visual_agent: true
+visual_agent_lr: 0.001
+visual_agent_batch_size: 128
+visual_agent_epochs: 3
+
+real_replay: false
+
+balance_ft: false
+balance_epochs: 1

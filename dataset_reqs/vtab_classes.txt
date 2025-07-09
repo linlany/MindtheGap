@@ -1,0 +1,50 @@
+airplane
+airport
+baseball diamond
+basketball court
+beach
+bridge
+chaparral
+church
+circular farmland
+cloud
+banded
+blotchy
+braided
+bubbly
+bumpy
+chequered
+cobwebbed
+cracked
+crosshatched
+crystalline
+Abyssinian Cat
+American Bulldog
+American Pit Bull Terrier
+Basset Hound
+Beagle
+Bengal Cat
+Birman
+Bombay Cat
+Boxer Dog
+British Shorthair Cat
+AnnualCrop
+Forest
+HerbaceousVegetation
+Highway
+Industrial
+Pasture
+PermanentCrop
+Residential
+River
+SeaLake
+petunia
+wild pansy
+primula
+sunflower
+pelargonium
+bishop of llandaff
+gaura
+geranium
+orange dahlia
+pink-yellow dahlia
