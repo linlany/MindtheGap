@@ -38,7 +38,7 @@ weight_decay: 1e-4
 momentum: 0.9
 seed: 0
 
-distill: false
+
 visual_agent: true
 visual_agent_lr: 0.001
 visual_agent_batch_size: 128
