@@ -184,23 +184,17 @@ def run_class_incremental(cfg, device):
             for bach_i, (inputs, targets, t) in enumerate(train_loader):
                 loss_c = torch.tensor(0.0).to(device)
                 loss = torch.tensor(0.0).to(device)
-                loss_distill = torch.tensor(0.0).to(device)
+
                 replay_loss = torch.tensor(0.0).to(device)
                 torch.cuda.empty_cache()
 
 
                 # targets = targets - targets_bais
                 inputs, targets = inputs.to(device), targets.to(device)
-                if cfg.distill:
-                    outputs, teacher_out, distill_out = model(inputs, distill=True)
-                    distill_out = outputs.clone()
-                    teacher_out = teacher_out.float()
-                else:
-                    outputs =  model(inputs)
+
+                outputs =  model(inputs)
                 # image_f, text_f = model(inputs, return_feature=True)
                 if task_id >0:
-                    if cfg.distill:
-                        loss_distill = F.mse_loss(distill_out[:,targets_bais:], teacher_out.detach()[:,targets_bais:])
                     if cfg.real_replay:
                         mask_replay = (targets < targets_bais)
                         old_targets = targets[mask_replay].clone()
@@ -208,18 +202,16 @@ def run_class_incremental(cfg, device):
                         targets = targets[~mask_replay]
                         outputs = outputs[~mask_replay]
                         replay_loss = intra_cls(old_outputs, old_targets, 0).mean()*0.1
-                    loss_c = intra_cls(outputs,targets,targets_bais).mean() + loss_distill*1 + replay_loss
+                    loss_c = intra_cls(outputs,targets,targets_bais).mean() + replay_loss
                     pass
                 else:
-                    if cfg.distill:
-                        loss_distill = F.mse_loss(distill_out, teacher_out.detach())
-                    loss_c = torch.nn.functional.cross_entropy(outputs, targets) + loss_distill*1
+                    loss_c = torch.nn.functional.cross_entropy(outputs, targets) 
                 loss += loss_c
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 if bach_i % 10 == 0:
-                    logging.info(f"Epoch {i_epoch + 1}/{epochs} | Batch {bach_i + 1}/{len(train_loader)} | Loss: {loss.item()} | Loss_c: {loss_c.item()} | loss_dist: {loss_distill.item()}")
+                    logging.info(f"Epoch {i_epoch + 1}/{epochs} | Batch {bach_i + 1}/{len(train_loader)} | Loss: {loss.item()} | Loss_c: {loss_c.item()}")
             scheduler.step()
 
                 
@@ -262,7 +254,7 @@ def run_class_incremental(cfg, device):
                 for bach_i, (inputs, targets, t) in enumerate(balance_loader):
                     loss_c = torch.tensor(0.0).to(device)
                     loss = torch.tensor(0.0).to(device)
-                    loss_distill = torch.tensor(0.0).to(device)
+
                     replay_loss = torch.tensor(0.0).to(device)
                     torch.cuda.empty_cache()
 
@@ -275,7 +267,7 @@ def run_class_incremental(cfg, device):
                     loss.backward()
                     optimizer.step()
                     if bach_i % 10 == 0:
-                        logging.info(f"Epoch {i_epoch + 1}/{epochs} | Batch {bach_i + 1}/{len(balance_loader)} | Loss: {loss.item()} | Loss_c: {loss_c.item()} | loss_dist: {loss_distill.item()}")
+                        logging.info(f"Epoch {i_epoch + 1}/{epochs} | Batch {bach_i + 1}/{len(balance_loader)} | Loss: {loss.item()} | Loss_c: {loss_c.item()}")
                     # break
                 scheduler.step()
 
@@ -348,7 +340,7 @@ def run_class_incremental(cfg, device):
                     for bach_i, (inputs, targets, t) in enumerate(balance_loader):
                         loss_c = torch.tensor(0.0).to(device)
                         loss = torch.tensor(0.0).to(device)
-                        loss_distill = torch.tensor(0.0).to(device)
+
                         replay_loss = torch.tensor(0.0).to(device)
                         torch.cuda.empty_cache()
 
@@ -363,7 +355,7 @@ def run_class_incremental(cfg, device):
                         loss.backward()
                         optimizer.step()
                         if bach_i % 10 == 0:
-                            logging.info(f"Epoch {i_epoch + 1}/{epochs} | Batch {bach_i + 1}/{len(balance_loader)} | Loss: {loss.item()} | Loss_c: {loss_c.item()} | loss_dist: {loss_distill.item()}")
+                            logging.info(f"Epoch {i_epoch + 1}/{epochs} | Batch {bach_i + 1}/{len(balance_loader)} | Loss: {loss.item()} | Loss_c: {loss_c.item()}")
                         # break
                         scheduler.step()
 
