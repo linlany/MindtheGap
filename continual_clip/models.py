@@ -18,7 +18,7 @@ import numpy as np
 
 
 
-def forward_clip(self, image, text, return_feature=False, distill_token=None):
+def forward_clip(self, image, text, return_feature=False):
     image_features = self.encode_image(image)
     text_features = self.encode_text(text)
 
@@ -34,11 +34,7 @@ def forward_clip(self, image, text, return_feature=False, distill_token=None):
     if return_feature:
         return logits_per_image, logits_per_text, image_features, text_features
 
-    if distill_token is not None:
-        distill_text_features = self.encode_text(distill_token)
-        distill_text_features = distill_text_features / distill_text_features.norm(dim=1, keepdim=True)
-        distill_logits_per_image = logit_scale * image_features @ distill_text_features.t()
-        return logits_per_image, logits_per_text, distill_logits_per_image
+
     # shape = [global_batch_size, global_batch_size]
     return logits_per_image, logits_per_text
 
@@ -81,10 +77,8 @@ class ClassIncrementalCLIP(nn.Module):
         self.device = device
         self.classes_names = None
         # self.model, self.transforms = clip.load(cfg.model_name, device=device, jit=jit)
-        # teacher model
-        if cfg.distill:
-            self.teacher_model, _ = clip.load(cfg.model_name, device=device, jit=False)
-            self.teacher_model.forward = types.MethodType(forward_clip, self.teacher_model)
+
+
         #lora_clip
         self.model, self.transforms = lora_clip.load(cfg.model_name, device=device, jit=jit, r=cfg.lora_rank, lora_mode=cfg.lora_mode)
         # for name, param in self.model.named_parameters():
@@ -123,7 +117,7 @@ class ClassIncrementalCLIP(nn.Module):
         logits_per_image = logit_scale * image_features @ text_features.t()
         return logits_per_image
 
-    def forward(self, image, test=False, all_test=False, return_feature=False, distill=False,replay=None):
+    def forward(self, image, test=False, all_test=False, return_feature=False,replay=None):
         if test:
             # pdb.set_trace()
             with torch.no_grad():
@@ -141,9 +135,7 @@ class ClassIncrementalCLIP(nn.Module):
                 # pdb.set_trace()
                 probs = logits_per_image.softmax(dim=-1)
         else:
-            if distill:
-                with torch.no_grad():
-                    teacher_logits_per_image, teacher_logits_per_text = self.teacher_model(image, self.text_tokens)
+
             if return_feature:
                 __, _, image_features, text_features = self.model(image, self.text_tokens, return_feature=return_feature)
                 return image_features, text_features
@@ -161,8 +153,7 @@ class ClassIncrementalCLIP(nn.Module):
         if return_feature:
             text_features = self.model.encode_text(self.all_text_tokens)
             return probs, image_features, text_features
-        if distill:
-            return probs, teacher_logits_per_image, None
+
         if replay is not None:
             return probs, replay_logits
         return probs
