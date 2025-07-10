@@ -36,7 +36,7 @@ only_reset_B: False
 freeze_A: False
 all_test: False
 
-distill: False
+
 visual_agent: true
 visual_agent_lr: 0.0005
 visual_agent_batch_size: 64
